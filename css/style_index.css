@@ -1,0 +1,211 @@
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body{
+            width: 100%;
+            height: auto;
+        }
+        header{
+            width: 100%;
+            height: 150px;
+            border-bottom: 1px solid black;
+        }
+
+        nav{
+            text-align: center;
+            width: 100%;
+            height: 50px;
+            background-color: #333;
+            border-bottom: 1px solid black;
+        }
+        nav ul li a:hover {
+        color: #ffd400;
+}
+        ul li{
+            
+            display: inline-block;  
+            list-style: none;
+            padding: 10px;
+            
+            margin: 0;
+            color: #fff;  
+        }
+        li a{
+            
+            text-decoration: none;
+            color: #fff;
+            font-size: 20px;
+        }
+        li a:hover{
+            color: #ffd400;
+        }
+        .logo{
+            float: left;
+            position: relative;
+            top: -29px; 
+            left: 20px;
+        }
+        h2{
+            float: left;
+            position: relative;
+            top: 10px; 
+            left: 15px;
+            color: #fff;
+            font-size: 20px;
+        }
+        section{
+            width: 100%;
+            border-radius: 10px;
+            height: 100px;
+            background-image: url('../img/banner2.jpg');
+            background-size: cover;
+            background-position: center;    
+        }
+        body.login-page section { display: none !important; }
+        article:not(.dn){
+          width: 100%;
+          min-height: 500px;
+          padding: 20px;
+          background-color: #f4f4f4;
+}
+        
+        .hero-content{
+            text-align: center;
+            padding: 10px;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            
+        }
+        .hero-content button{
+  padding:12px 18px;
+  font-size:16px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  background:#ffd400;     
+  color:#111;             
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.18);
+  transition: background .15s ease, transform .08s ease;
+}
+.hero-content button:hover{
+  background:#f0c300; 
+  transform: translateY(-1px);
+}
+.hero-content input[type="text"]{
+  padding:14px 16px;
+  font-size:16px;
+  border-radius:6px;
+  border: none;
+  width:800px;        
+  max-width:80%;      
+  outline:none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+article{
+            width: 100%;
+            height: 1000px;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        footer{
+            width: 100%;
+            height: auto;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 20px 0;
+        }
+        footer a{
+            color: #fff;
+            text-decoration: none;
+        }
+        footer a:hover{
+            color: #ffd400;
+        }
+        footer .logo{
+            width: 50px;
+            height: 50px;
+            margin-bottom: 10px;
+        }
+        footer .social-icons a{
+            margin: 0 10px;
+            color: #fff;
+            font-size: 20px;
+        }
+        footer .social-icons a:hover{
+            color: #ffd400;
+        }
+/* ====== Card style cho tournaments (Bootstrap + thêm chút CSS) ====== */
+.t-card {
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.t-card .card-banner {
+  height: 160px;
+  overflow: visible;
+  position: relative;
+}
+
+.t-card .card-banner img {
+  width:100%;
+  height:100%;
+  object-fit: cover;
+  display:block;
+}
+
+/* logo hình tròn chồng lên banner */
+.t-card .logo-circle {
+  width:92px;
+  height:92px;
+  border-radius:50%;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position: absolute;
+  left:50%;
+  transform: translateX(-50%);
+  top:110px; /* điều chỉnh độ chồng */
+  box-shadow:0 8px 20px rgba(0,0,0,0.12);
+  border:6px solid #fff;
+}
+
+.t-card .logo-circle img {
+  width:68px;
+  height:68px;
+  object-fit: contain;
+}
+
+/* nội dung */
+.t-card .card-body {
+  padding-top:70px; /* chừa khoảng cho logo */
+  padding-bottom:12px;
+  text-align:center;
+  flex:1 1 auto;
+}
+.t-card .card-title { font-size:15px; font-weight:700; color:#222; min-height:48px; }
+.t-card .card-meta { color:#9aa0a6; font-size:13px; margin-top:8px; }
+
+/* footer */
+.t-card .card-footer { background:transparent; border-top:0; padding:12px; text-align:center; }
+
+/* nút theo dõi */
+.btn-follow {
+  border-radius:20px;
+  padding:6px 16px;
+  border:1px solid #b33;
+  color:#b33;
+  background:transparent;
+}
+.btn-follow:hover { background:#b33; color:#fff; }

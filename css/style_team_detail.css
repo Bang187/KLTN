@@ -1,0 +1,386 @@
+/* Reset cơ bản */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  color: #fff;
+  overflow-x: hidden;
+}
+
+/* HEADER CHÍNH */
+.hero-header {
+  position: relative;
+  background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), 
+              url('../img/banner_team_detail.png') center/cover no-repeat;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* THANH NAV */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 80px;
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+.logo span {
+  font-size: 16px;
+  vertical-align: super;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 30px;
+}
+.nav-links li a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: 0.3s;
+}
+.nav-links li a:hover,
+.nav-links li a.active {
+  color: #e63946;
+  border-bottom: 2px solid #e63946;
+}
+
+/* HERO CONTENT */
+.hero-content {
+  display: flex;
+  flex-direction: column; /* xếp h1 và countdown theo cột */
+  justify-content: center; /* canh giữa theo chiều dọc */
+  align-items: center; /* canh giữa theo chiều ngang */
+  height: 100vh; /* chiếm toàn bộ chiều cao màn hình */
+  text-align: center;
+}
+
+.hero-content h1 {
+  font-size: 60px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.hero-content p {
+  color: #ddd;
+  font-size: 16px;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.countdown {
+  display: flex;
+  gap: 25px;
+  justify-content: flex-end;
+  margin-bottom: 40px;
+}
+.countdown div {
+  text-align: center;
+}
+.countdown span {
+  font-size: 28px;
+  font-weight: 700;
+  display: block;
+}
+.countdown small {
+  font-size: 13px;
+  color: #ccc;
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+}
+.btn {
+  text-decoration: none;
+  padding: 12px 28px;
+  border-radius: 5px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.btn-primary {
+  background: #e63946;
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #d62828;
+}
+.btn-secondary {
+  background: transparent;
+  border: 1px solid #fff;
+  color: #fff;
+}
+.btn-secondary:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .hero-content {
+    text-align: center;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+  }
+  .countdown {
+    justify-content: center;
+  }
+  .buttons {
+    justify-content: center;
+  }
+}
+/* SECTION: Thông tin đội bóng */
+.team-info-section {
+  background: linear-gradient(135deg, #081b39 50%, #c70c3a 50%);
+  color: white;
+  padding: 50px 0;
+  position: relative;
+}
+
+.team-info-section .container {
+  width: 90%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.info-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+}
+
+.info-card {
+  background: white;
+  color: #c70c3a;
+  padding: 20px;
+  border-radius: 10px;
+  width: 280px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.info-card i {
+  margin-bottom: 10px;
+}
+
+.info-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.highlight {
+  font-weight: bold;
+  color: #c70c3a;
+}
+
+.join-btn {
+  margin-top: 40px;
+}
+
+.btn-join {
+  background: #ff2255;
+  color: white;
+  font-weight: bold;
+  padding: 12px 30px;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.btn-join:hover {
+  background: #c70c3a;
+}
+
+/* SECTION: Thành viên */
+.member-section {
+  background: #f8f8f8;
+  padding: 60px 0;
+}
+
+.member-section .container {
+  width: 90%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.member-section h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 40px;
+  color: #222;
+}
+
+.member-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 30px;
+}
+
+.member-card {
+  background: white;
+  border-radius: 10px;
+  padding: 15px;
+  width: 180px;
+  text-align: center;
+  transition: 0.3s;
+}
+
+.member-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.member-card img {
+  width: 100%;
+  height: 180px;
+  border-radius: 10px;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.member-card p {
+  font-weight: 600;
+  color: #333;
+}
+
+
+    /* ====== MEMBER SECTION ====== */
+.member-section {
+  padding: 60px 0;
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.member-section h2 {
+  text-align: center;
+  font-size: 28px;
+  margin-bottom: 40px;
+  color: #222;
+}
+
+.carousel-container {
+  position: relative;
+  width: 90%;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.member-list {
+  display: flex;
+  flex-wrap: nowrap; /* ✅ Giữ 1 hàng ngang */
+  transition: transform 0.5s ease;
+}
+
+.member-card {
+  flex: 0 0 calc(25% - 20px); /* ✅ 4 người/lần */
+  margin: 0 10px;
+  background: #f9f9f9;
+  border-radius: 15px;
+  overflow: hidden;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+.member-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.member-card img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+}
+
+.member-info {
+  padding: 12px;
+}
+
+.member-info h3 {
+  font-size: 18px;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.member-info p {
+  font-size: 14px;
+  margin: 3px 0;
+  color: #555;
+}
+
+.role {
+  color: #007bff;
+  font-weight: bold;
+}
+
+.status.active {
+  background: #d4edda;
+  color: #155724;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.status.inactive {
+  background: #f8d7da;
+  color: #721c24;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Nút điều hướng */
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  font-size: 28px;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.3s;
+}
+
+.nav-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.prev-btn {
+  left: 10px;
+}
+
+.next-btn {
+  right: 10px;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .member-card {
+    flex: 0 0 calc(50% - 20px); /* 2 người mỗi lượt */
+  }
+}
+
+@media (max-width: 576px) {
+  .member-card {
+    flex: 0 0 100%; /* 1 người/lượt */
+  }
+}

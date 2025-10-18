@@ -1,0 +1,16 @@
+.Ds_Store
+Thumbs.db
+vscode/
+.idea/
+vendor/
+*.log
+cache/
+tmp/
+*.tmp
+.env
+.env.local
+config.php
+db_config.php
+*.sql
+*.zip
+uploads/
