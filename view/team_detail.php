@@ -65,7 +65,10 @@ while ($row = $tblTeam->fetch_assoc()) {
     <div class="hero-content">
       <h1><?php echo strtoupper($teamName); ?></h1>
       <div class="buttons">
-        <a href="#" class="btn btn-primary">THÊM THÀNH VIÊN</a>
+        <a href="../view/join_team.php?id_team=<?php echo $id; ?>" class="btn btn-primary"
+          onclick="return confirm('Bạn có chắc muốn gửi yêu cầu gia nhập đội này?')">
+          GIA NHẬP ĐỘI
+        </a>
         <a href="../index.php?page=team" class="btn btn-secondary">QUAY LẠI</a>
       </div>
     </div>
@@ -84,7 +87,10 @@ while ($row = $tblTeam->fetch_assoc()) {
         </div>
       </div>
       <div class="join-btn">
-        <a href="#" class="btn-join">GIA NHẬP ĐỘI</a>
+       <a href="../view/join_team.php?id_team=<?php echo $id; ?>" class="btn-join"
+          onclick="return confirm('Bạn có chắc muốn gửi yêu cầu gia nhập đội này?')">
+          GIA NHẬP ĐỘI
+        </a>
       </div>
     </div>
   </section>
@@ -98,17 +104,19 @@ while ($row = $tblTeam->fetch_assoc()) {
     <div class="member-list" id="memberList">
       <?php foreach ($members as $m) { ?>
       <div class="member-card">
-        <img src="../img/default_avaplayer.jpg">
+        <img src="../img/avatar/<?php echo htmlspecialchars($m['ava']); ?>" 
+          onerror="this.src='../img/avatar/default_avaplayer.jpg';" 
+          alt="Avatar cầu thủ">
         <div class="member-info">
           <h3><?php echo htmlspecialchars($m['name']); ?></h3>
           <p><strong>Vị trí:</strong> <?php echo htmlspecialchars($m['position']); ?></p>
           <p><strong>Tuổi:</strong> <?php echo htmlspecialchars($m['age']); ?></p>
           <p><strong>Vai trò:</strong> <span class="role"><?php echo htmlspecialchars($m['role']); ?></span></p>
-          <p><strong>Trạng thái:</strong>
+          <!--<p><strong>Trạng thái:</strong>
             <span class="status <?php echo ($m['status'] == 'Hoạt động') ? 'active' : 'inactive'; ?>">
               <?php echo htmlspecialchars($m['status']); ?>
             </span>
-          </p>
+          </p>-->
         </div>
       </div>
       <?php } ?>

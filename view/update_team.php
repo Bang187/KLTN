@@ -185,7 +185,7 @@ $conn->close();
 </head>
 <body>
     <div class="nav">
-        <a href="dashboard.php?page=update_team&id=<?php echo $idteam;?>">Cấu hình</a>
+        <a class="active" href="dashboard.php?page=update_team&id=<?php echo $idteam;?>">Cấu hình</a>
         <a href="dashboard.php?page=dash_team_member&id=<?php echo $idteam;?>">Thành viên</a>
 
     </div>

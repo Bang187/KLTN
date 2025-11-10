@@ -114,12 +114,19 @@ $id_tourna = isset($id_tourna) ? (int)$id_tourna : (isset($_GET['id']) ? (int)$_
   padding:6px 10px; border-radius:9999px;
   background:#f3f4f6; border:1px solid #e5e7eb; font-weight:600;
 }
-
+.btn.lock {
+  background:#111827; color:#fff; border:1px solid #0b1220;
+  padding:10px 14px; border-radius:10px; font-weight:600;
+  box-shadow:0 2px 6px rgba(0,0,0,.06);
+}
+.btn.lock:hover { background:#0b1220 }
+.lock-wrap{ display:flex; justify-content:flex-end; margin:12px 0 4px }
 </style>
 
 
 <div class="nav">
   <a href="dashboard.php?page=update_tourna&id=<?= $id_tourna ?>">Cấu hình</a>
+  <a href="dashboard.php?page=regulation&id_tourna=<?= $id_tourna ?>">Điều lệ</a>
   <a href="dashboard.php?page=addteam&id=<?= $id_tourna ?>">Đội tham gia</a>
   <a href="dashboard.php?page=draw&id_tourna=<?= $id_tourna ?>">Kết quả bốc thăm</a>
   <a class="active" href="dashboard.php?page=schedule&id=<?= $id_tourna ?>">Lịch thi đấu</a>
@@ -129,24 +136,48 @@ $id_tourna = isset($id_tourna) ? (int)$id_tourna : (isset($_GET['id']) ? (int)$_
   <h2 class="page-title">Lịch thi đấu</h2>
 
 
-  <div class="hstack">
-<a class="btn primary" href="dashboard.php?page=schedule&id=<?= $id_tourna ?>&generate=1">+ Sinh cặp đấu (Knockout)</a>
-  <?php if(isset($_GET['genok'])): ?><span class="alert ok">Đã sinh cặp đấu.</span><?php endif; ?>
-  <?php if(isset($_GET['saved'])): ?><span class="alert info">Đã lưu lịch.</span><?php endif; ?>
-  <?php if(isset($_GET['conflict'])): ?>
-    <span class="badge-err">Khung giờ/sân bị trùng! Vui lòng chọn thời điểm khác.</span>
-    <script>
-      alert(decodeURIComponent("<?= isset($_GET['msg'])? $_GET['msg'] : 'Khung giờ/sân bị trùng! Vui lòng chọn thời điểm khác.' ?>"));
-    </script>
+<div class="hstack">
+  <a class="btn primary"
+     href="dashboard.php?page=schedule&id=<?= $id_tourna ?>&generate=auto">
+     + Sinh cặp thi đấu
+  </a>
+
+  <?php if(isset($_GET['genok'])): ?>
+    <span class="alert ok">Đã sinh cặp đấu theo thể thức</span>
   <?php endif; ?>
-  </div>
+
+  <?php if(isset($_GET['saved'])): ?>
+    <span class="alert info">Đã lưu phân lịch.</span>
+  <?php endif; ?>
+
+  <?php if(isset($_GET['conflict'])): ?>
+    <span class="badge-err">Khung giờ và sân bị trùng! Vui lòng chọn thời điểm khác.</span>
+  <?php endif; ?>
+</div>
+
 
   <?php if(empty($rounds)): ?>
     <p class="muted">Chưa có trận nào. Hãy bấm “Sinh cặp đấu”.</p>
   <?php else: ?>
-    <?php foreach($rounds as $roundNo => $matches): ?>
-      <div class="round-card">
-        <div class="round-header">Vòng <?= (int)$roundNo ?></div>
+  <?php
+// Tìm vòng bảng cuối cùng (vòng có id_group > 0)
+$lastGroupRound = null;
+foreach ($rounds as $rNo => $list) {
+  foreach ($list as $row) {
+    $gid = isset($row['_gid']) ? (int)$row['_gid']
+                               : (isset($row['id_group']) ? (int)$row['id_group'] : 0);
+    if ($gid > 0) { $lastGroupRound = $rNo; }
+  }
+}
+?>
+<?php foreach ($rounds as $roundNo => $matches): ?>
+  <div class="round-card">
+    <div class="round-header">
+      <h3 class="round-title">
+        <?= htmlspecialchars($roundTitles[$roundNo] ?? ('Vòng '.$roundNo)) ?>
+      </h3>
+    </div>
+    
         <div class="table-wrap">
           <table class="table">
             <thead>
@@ -164,68 +195,113 @@ $id_tourna = isset($id_tourna) ? (int)$id_tourna : (isset($_GET['id']) ? (int)$_
   </tr>
             </thead>
 <tbody>
-<?php foreach($matches as $m): ?>
+<?php
+// fallback nếu chưa truyền helper từ controller
+if (!isset($prettyPlaceholder) || !is_callable($prettyPlaceholder)) {
+  $prettyPlaceholder = function($s){ return $s; };
+}
+?>
+
+<?php foreach ($matches as $m): ?>
   <tr>
-    <td><?= (int)$m['id_match'] ?></td>
+    <!-- Mã (STT theo vòng) -->
+    <td><?= isset($m['_seq']) ? (int)$m['_seq'] : '' ?></td>
+
+    <!-- Ngày -->
     <td><?= $m['kickoff_date'] ? date('d/m/Y', strtotime($m['kickoff_date'])) : '' ?></td>
+
+    <!-- Giờ -->
     <td><?= $m['kickoff_time'] ? substr($m['kickoff_time'], 0, 5) : '' ?></td>
-    <td><?= $m['home_name'] ? htmlspecialchars($m['home_name']) : '<span class="muted">'.htmlspecialchars($m['home_placeholder']).'</span>' ?></td>
-    <td class="muted">
-        <?php
-    // coi là có tỉ số nếu đã đá hoặc DB đã có giá trị score khác NULL
-    $hasScore = ($m['status'] === 'played') ||
-                ($m['home_score'] !== null && $m['away_score'] !== null);
 
-    if ($hasScore) {
-      $hs = (int)$m['home_score'];
-      $as = (int)$m['away_score'];
-      echo '<span class="score-pill">'.$hs.' : '.$as.'</span>';
-    } else {
-      echo '<span class="muted">vs</span>';
-    }
-  ?>
-    </td>
-    <td><?= $m['away_name'] ? htmlspecialchars($m['away_name']) : '<span class="muted">'.htmlspecialchars($m['away_placeholder']).'</span>' ?></td>
-
-    <!-- Sân: ưu tiên pitch_label, fallback venue -->
-    <td>
-      <?= htmlspecialchars($m['pitch_label'] ?: ($m['venue'] ?? '')) ?>
+    <!-- Chủ nhà -->
+    <td class="home">
+      <?php
+        if (!empty($m['home_name'])) {
+          echo htmlspecialchars($m['home_name']);
+        } else {
+          echo htmlspecialchars($prettyPlaceholder($m['home_placeholder'] ?? ''));
+        }
+      ?>
     </td>
 
-    <td>
-  <?php $st = $m['status'] ?? 'scheduled'; ?>
-  <span class="status-pill
-              <?= $st==='played'    ? 'status-played'    : '' ?>
-              <?= $st==='scheduled' ? 'status-scheduled' : '' ?>
-              <?= $st==='canceled'  ? 'status-canceled'  : '' ?>">
-    <?= $st==='played' ? 'Đã đá' : ($st==='canceled' ? 'Hủy' : 'Chưa đá') ?>
-  </span>
-</td>
+    <!-- Tỉ số -->
+    <td class="muted" style="width:60px">
+      <?php
+        $hasScore = ($m['status'] === 'played') ||
+                    ($m['home_score'] !== null && $m['away_score'] !== null);
 
+        if ($hasScore) {
+          $hs = (int)$m['home_score'];
+          $as = (int)$m['away_score'];
+          echo '<span class="score-pill">'.$hs.' : '.$as.'</span>';
+        } else {
+          echo '<span class="muted">vs</span>';
+        }
+      ?>
+    </td>
+
+    <!-- Khách -->
+    <td class="away">
+      <?php
+        if (!empty($m['away_name'])) {
+          echo htmlspecialchars($m['away_name']);
+        } else {
+          echo htmlspecialchars($prettyPlaceholder($m['away_placeholder'] ?? ''));
+        }
+      ?>
+    </td>
+
+    <!-- Sân -->
+    <td><?= htmlspecialchars($m['pitch_label'] ?: ($m['venue'] ?? '')) ?></td>
+
+    <!-- Trạng thái -->
+    <td>
+      <?php $st = $m['status'] ?? 'scheduled'; ?>
+      <span class="status-pill
+                  <?= $st==='played'    ? 'status-played'    : '' ?>
+                  <?= $st==='scheduled' ? 'status-scheduled' : '' ?>
+                  <?= $st==='canceled'  ? 'status-canceled'  : '' ?>">
+        <?= $st==='played' ? 'Đã đá' : ($st==='canceled' ? 'Hủy' : 'Chưa đá') ?>
+      </span>
+    </td>
+
+    <!-- Phân lịch -->
     <td>
       <form method="post" class="kickoff-form">
         <input type="hidden" name="id_match" value="<?= (int)$m['id_match'] ?>">
         <input type="date" name="kickoff_date" value="<?= $m['kickoff_date'] ?? '' ?>">
         <input type="time" name="kickoff_time" value="<?= $m['kickoff_time'] ?? '' ?>">
-
-        <!-- địa điểm ẩn: lấy từ giải -->
-        <input type="hidden" name="location_id" value="<?= isset($tourna['location_id']) ? (int)$tourna['location_id'] : (int)($m['location_id'] ?? 0) ?>">
-
+        <input type="hidden" name="location_id"
+               value="<?= isset($tourna['location_id']) ? (int)$tourna['location_id'] : (int)($m['location_id'] ?? 0) ?>">
         <input type="text" name="pitch_label" placeholder="Sân (vd: Sân 1)" value="<?= htmlspecialchars($m['pitch_label'] ?? '') ?>">
         <input type="text" name="venue" placeholder="Ghi chú" value="<?= htmlspecialchars($m['venue'] ?? '') ?>">
         <button class="btn" name="update_kickoff" value="1">Lưu</button>
       </form>
     </td>
 
+    <!-- Hành động -->
     <td>
-      <a class="btnpoint" href="dashboard.php?page=match_stats&id_match=<?= (int)$m['id_match'] ?>&id=<?= $id_tourna ?>">Nhập kết quả </a>
+      <a class="btnpoint"
+         href="dashboard.php?page=match_stats&id_match=<?= (int)$m['id_match'] ?>&id=<?= $id_tourna ?>">
+        Nhập kết quả
+      </a>
     </td>
   </tr>
 <?php endforeach; ?>
 </tbody>
+
           </table>
         </div>
       </div>
+      <?php if ($lastGroupRound !== null && $roundNo === $lastGroupRound): ?>
+  <div class="lock-wrap">
+    <a class="btn lock"
+       href="dashboard.php?page=schedule&id=<?= $id_tourna ?>&resolve=groups">
+      🔒 Khóa kết quả vòng bảng
+    </a>
+  </div>
+<?php endif; ?>
+
     <?php endforeach; ?>
   <?php endif; ?>
 </div>

@@ -122,7 +122,36 @@ body { background: var(--bg); color: var(--text); font-family: system-ui, -apple
 
 
 main.layout { margin-top: 10px; }
+/* --- Submenu cho sideba Tài khoản --- */
+.sidebar ul ul.submenu {
+  display: none;
+  list-style: none;
+  padding-left: 15px;
+  margin-top: 6px;
+}
 
+.sidebar li.has-submenu:hover > ul.submenu {
+  display: block;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.sidebar ul ul.submenu li a {
+  padding: 10px 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+  color: #374151;
+  font-size: 15px;
+}
+
+.sidebar ul ul.submenu li a:hover {
+  background: #eef2ff;
+  color: #2563eb;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 
     </style>
@@ -143,12 +172,22 @@ main.layout { margin-top: 10px; }
       <?php endif; ?>
       <?php if (isset($_SESSION['ID_role']) && $_SESSION['ID_role'] == 3): ?>
         <li><a href="?page=man_team">Quản lý đội bóng</a></li>
-        <li><a href="">Yêu cầu tham gia đội</a></li>
+        <li><a href="?page=man_team_requests">Yêu cầu tham gia đội</a></li>
         <?php endif; ?>
        <?php if (isset($_SESSION['ID_role']) && $_SESSION['ID_role'] == 5): ?>
       <li><a href="following_tournaments.php">Giải đấu đang theo dõi</a></li>
       <?php endif; ?>
-        <li><a href="?page=man_user">Quản lý tài khoản</a></li>
+      <?php if (isset($_SESSION['ID_role']) && $_SESSION['ID_role'] == 4): ?>
+      <li><a href="?page=following_teams">Đội tham gia</a></li>
+      <?php endif; ?>
+<li class="has-submenu">
+          <a href="?page=man_user">Quản lý tài khoản ▾</a>
+          <ul class="submenu">
+            <li><a href="?page=man_user">Thông tin cá nhân</a></li>
+            <li><a href="?page=change_password">Đổi mật khẩu</a></li>
+          </ul>
+        </li>
+
         <li><a href="?page=logout">Đăng xuất</a></li>
         
       </ul>
@@ -163,20 +202,29 @@ main.layout { margin-top: 10px; }
     case 'man_tourna':    include_once 'manage_tourna.php'; break;
     case 'man_team':      include_once 'manage_team.php';   break;
     case 'man_user':      include_once 'manage_user.php';   break;
+    case 'change_password':   include_once 'change_password.php';   break;
     case 'create_tourna': include_once 'create_tourna.php'; break;
     case 'update_tourna': include_once 'updatetourna.php';  break;
     case 'delete_tourna': include_once 'delete_tourna.php'; break;
+    case 'edit_tourna':  include_once 'edit_tourna.php';   break;
     case 'logout':        include_once 'logout.php';        break;
     case 'rank':          include_once 'manage_ranktourna.php'; break;
+    case 'regulation':   include_once 'manage_regulation.php'; break;
+    case 'following_teams': include_once("following_teams.php") ; break ;
                     case 'delete_team': include_once("delete_team.php") ; break ;
                     case 'create_team': include_once("create_team.php") ; break ;
                     case 'edit_team': include_once("edit_team.php") ; break ;
                     case 'update_team': include_once("update_team.php") ; break ;
                     // member
+                    case 'man_team_requests':      include_once 'manage_team_requests.php';   break;
+                    case 'approve_requests': include_once 'view/approve_request.php'; break;
+                    case 'reject_requests': include_once 'view/reject_request.php'; break;
                     case 'dash_team_member': include_once("dash_team_member.php") ; break ;
                     case 'edit_member': include_once("edit_member.php") ; break ;
                     case 'delete_member': include_once("delete_member.php") ; break ;
-                    case 'create_member': include_once("create_member.php") ; break ;
+                    
+                    case 'add_member': include_once("add_member.php") ; break ;
+    case 'draw_group': include_once("draw_group.php") ;break;
 
     case 'match_stats':
       require_once 'controlmatchstat.php';
@@ -203,7 +251,39 @@ main.layout { margin-top: 10px; }
       $idTourna = isset($_GET['id']) ? (int)$_GET['id'] : (isset($_GET['id_tourna']) ? (int)$_GET['id_tourna'] : 0);
       (new cSchedule())->screen($idTourna);
       break;
+    case 'draw_save_seed': {
+      require_once 'controldraw.php';
+      $idTourna = isset($_GET['id_tourna']) ? (int)$_GET['id_tourna'] : 0;
+      (new cDraw())->saveSeeds($idTourna);  // << lưu tournament_team.seed
+      break;
+    }
+
+    case 'draw_place_seeded': {
+      require_once 'controldraw.php';
+      $idTourna = isset($_GET['id_tourna']) ? (int)$_GET['id_tourna'] : 0;
+      (new cDraw())->placeSeeded($idTourna); // << điền draw_slot theo seed
+      break;
+    }
+
+    case 'schedule_generate': {
+      require_once 'controlschedule.php';
+      $idTourna = isset($_GET['id_tourna']) ? (int)$_GET['id_tourna'] : 0;
+      (new cSchedule())->generate($idTourna); // << đọc ruletype để biết KO/RR
+      break;
+    }
+    case 'gen_group_schedule':
+    $id = isset($_GET['id_tourna']) ? (int)$_GET['id_tourna'] : 0;
+    if ($id <= 0) { echo "Thiếu id_tourna"; break; }
+    require_once __DIR__.'/control/controlschedule.php';
+    $cs  = new cSchedule();
+    $res = $cs->genGroupSchedule($id);
+    $msg = $res['ok'] ? 'gen_ok' : 'gen_fail';
+    header('Location: dashboard.php?page=schedule&id='.$id.'&msg='.$msg);
+    exit;
+  
   }
+    
+    
 
 } else { ?>
   <h3>Chào mừng <?= htmlspecialchars($_SESSION['username'] ?? 'người dùng') ?> đến với Dashboard</h3>

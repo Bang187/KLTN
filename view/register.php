@@ -1,7 +1,4 @@
-<?php
-    session_start();
 
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -90,7 +87,7 @@ article.dn{
   /* Background phủ kín */
   background-image:
     linear-gradient(0deg, rgba(0,0,0,.35), rgba(0,0,0,.35)),
-    url('../img/bglogin.jpg');
+    url('img/bglogin.jpg');
   background-position: center top ;
   background-repeat: no-repeat;
   background-size: cover;        /* <- thiếu dòng này nên nhìn lệch/cắt */
@@ -214,11 +211,7 @@ article.dn{
     </style>
 </head>
 <body>
-    
-    <?php
-include_once('partials/header.php');
-include_once('partials/nav.php');
-?>
+  
     
 <article class="dn">
   <form class="login-card" method="post" action="" >
@@ -246,12 +239,12 @@ include_once('partials/nav.php');
 
     <div class="actions">
         Bạn đã có tài khoản?
-      <a class="link" href="login.php">Đăng nhập ngay</a>
+      <a class="link" href="index.php?page=login">Đăng nhập ngay</a>
     </div>
   </form>
 </article>
 
-<?php include_once('partials/footer.php'); ?>
+
 </body>
 </html>
 <?php
@@ -260,11 +253,11 @@ include_once('partials/nav.php');
         $fullname = $_POST['fullname'];
         $username = $_POST['username'];
         $password = $_POST['password'];
-        include_once('../control/controluser.php');
+        include_once('control/controluser.php');
         $p = new cUser();
         $res = $p->cregister($email,$fullname,$username,$password);
         if($res == 1){
-            echo "<script>alert('Đăng ký thành công!'); window.location='login.php';</script>";
+            echo "<script>alert('Đăng ký thành công!'); window.location='index.php?page=login';</script>";
         }elseif($res == -1){
             echo "<script>alert('Tên đăng nhập đã tồn tại! Vui lòng chọn tên khác.');</script>";
         }elseif($res == -2){

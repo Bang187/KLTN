@@ -1,10 +1,5 @@
 <style>
 
-.container {
-    background-color: #f9f9f9;
-    padding: 80px 0;
-}
-
 .about-section,
 .features-section,
 .team-section {

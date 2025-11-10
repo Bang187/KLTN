@@ -1,9 +1,9 @@
 <?php
 $page = $_GET['page'] ?? '';
 $isLoginPage = ($page === 'login');
-?>
-<?php
-    session_start();
+session_start();
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,7 +14,7 @@ $isLoginPage = ($page === 'login');
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.3/font/bootstrap-icons.min.css">
     <title>Trang chủ</title>
-    <link rel="stylesheet" href="css/style_index.css?v=9.0">
+    <link rel="stylesheet" href="css/style_index.css?v=10.0">
 </head>
 <body class="<?= $isLoginPage ? 'login-page' : '' ?>">
     <header> 
@@ -57,8 +57,40 @@ $isLoginPage = ($page === 'login');
                         case 'login': include_once("view/login.php"); break;
                         case 'register': include_once("view/register.php"); break;
                         case 'about': include_once("view/about.php"); break;
+                        case 'contact': include_once("view/contact.php"); break;
+                        case 'listnews': include_once("view/listnews.php"); break;
+                        case 'view_news_detail' : include_once("view/view_news_detail.php"); break;
                         case 'detail_team' : include_once("view/team_detail.php"); break; 
-                        case 'detail_tourna' : include_once("view/tourna_detail.php"); break;
+                        case 'tournaments_followed' : include_once("view/tournaments_followed.php"); break;
+                        case 'register_tourna':
+                          include_once __DIR__.'/control/controltourna.php';
+                          $c = new cTourna();
+                          $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
+    if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['doRegister'])) {
+        $res = $c->submitRegisterTeam($id, (int)($_POST['team_id'] ?? 0));
+        if (!empty($res['ok'])) {
+            if (session_status()===PHP_SESSION_NONE) session_start();
+            $_SESSION['flash'] = [
+              'type' => 'success',
+              'text' => 'Đã gửi đăng ký ghi danh tham gia giải thành công. Vui lòng chờ BTC duyệt.'
+            ];
+            $base = rtrim(dirname($_SERVER['PHP_SELF']), '/'); // ví dụ /Kltn
+            header('Location: ' . $base . '/view/tourna_detail.php?id=' . $id);
+            exit;
+        }
+        // lỗi -> hiện lại form + message như bạn đang làm
+        $msg = $res['err'] ?? 'Có lỗi xảy ra';
+        $c->showRegisterTeamScreen($id);
+    } else {
+        $c->showRegisterTeamScreen($id);
+    }
+                          break;
+
+                        // case 'detail_tourna' : include_once("view/tourna_detail.php"); break;
+                        case 'detail_tourna':  include_once("view/tourna_detail.php"); break;
+
+                        
                         
                     }
                 }else{
@@ -67,6 +99,7 @@ $isLoginPage = ($page === 'login');
             ?>
   </div>
 </article>
+
 <footer class="bg-dark text-white pt-5 pb-3">
   <div class="container">
     <div class="row">
@@ -110,8 +143,154 @@ $isLoginPage = ($page === 'login');
     </div>
   </div>
 </footer>
+<!-- ===== TournamentBot Floating Widget (fixed) ===== -->
+<style>
+  .tb-fab{
+    position:fixed; right:22px; bottom:22px; z-index:2147483647;
+    width:56px; height:56px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(135deg,#111827 0%, #1f2937 60%, #0ea5e9 100%);
+    color:#fff; border:none; box-shadow:0 10px 28px rgba(0,0,0,.22);
+    cursor:pointer; pointer-events:auto;
+  }
+  .tb-panel{
+    position:fixed; right:22px; bottom:90px; z-index:2147483647;
+    width:360px; max-height:70vh; display:none; flex-direction:column;
+    background:#fff; border:1px solid #e5e7eb; border-radius:16px; overflow:hidden;
+    box-shadow:0 24px 56px rgba(0,0,0,.22); pointer-events:auto;
+  }
+  .tb-header{
+    background: linear-gradient(135deg,#111827 0%, #111827 60%, #0ea5e9 100%);
+    color:#fff; padding:12px 14px; display:flex; align-items:center; gap:10px;
+  }
+  .tb-avatar{ width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:rgba(255,255,255,.15) }
+  .tb-log{ background:#f8fafc; padding:12px; overflow:auto; height:400px; }
+  .tb-row{ margin:8px 0; display:flex }
+  .tb-bot{ justify-content:flex-start }
+  .tb-me{ justify-content:flex-end }
+  .tb-bubble{ max-width:86%; padding:8px 10px; border-radius:10px; white-space:pre-wrap; border:1px solid #e5e7eb; background:#fff; color:#111827; }
+  .tb-me .tb-bubble{ background:#111827; color:#fff; border:none; }
+  .tb-input{ display:flex; gap:8px; padding:12px; border-top:1px solid #e5e7eb; background:#fff; }
+  .tb-input input{ flex:1; padding:10px; border:1px solid #e5e7eb; border-radius:10px; }
+  .tb-btn{ padding:10px 14px; border:1px solid #111827; background:#111827; color:#fff; border-radius:10px; }
+  .tb-links{ margin-top:6px; display:flex; flex-wrap:wrap; gap:6px }
+  .tb-links a{ font-size:12px; padding:4px 8px; border-radius:8px; border:1px solid #e5e7eb; background:#fff; text-decoration:none; color:#111827; }
+  .typing{ display:flex; gap:6px; padding:4px 0; }
+  .typing .dot{ width:6px; height:6px; border-radius:50%; background:#9CA3AF; animation: tbBlink 1.2s infinite ease-in-out; }
+  .typing .dot:nth-child(2){ animation-delay:.2s } .typing .dot:nth-child(3){ animation-delay:.4s }
+  @keyframes tbBlink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+  @media (max-width: 480px){ .tb-panel{ right:10px; left:10px; width:auto; } }
+</style>
+
+<button class="tb-fab" id="tbFab" title="Trợ lý giải đấu" aria-label="Trợ lý giải đấu">🤖</button>
+
+<div class="tb-panel" id="tbPanel" role="dialog" aria-label="TournamentBot" aria-modal="true">
+  <div class="tb-header">
+    <span class="tb-avatar">🤖</span>
+    <div>
+      <div class="tb-title" style="font-weight:700">TournamentBot</div>
+      <div class="tb-sub" style="font-size:12px;opacity:.8">Trợ lý giải đấu – hỏi là có dữ liệu ngay</div>
+    </div>
+    <button class="tb-close" id="tbClose" title="Đóng" aria-label="Đóng" style="margin-left:auto;background:transparent;border:none;color:#fff;font-size:18px;cursor:pointer">✕</button>
+  </div>
+  <div class="tb-log" id="tbLog">
+    <div id="tbTyping" class="typing" style="display:none"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+  </div>
+  <div class="tb-input">
+    <input id="tbMsg" placeholder="Hỏi về giải/đội/cầu thủ…">
+    <button class="tb-btn" id="tbSend">Gửi</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const panel = document.getElementById('tbPanel');
+  const fab   = document.getElementById('tbFab');
+  const closeBtn = document.getElementById('tbClose');
+  const log   = document.getElementById('tbLog');
+  const typing= document.getElementById('tbTyping');
+  const msg   = document.getElementById('tbMsg');
+  const send  = document.getElementById('tbSend');
+
+  // ⛳ ctx: nếu muốn khoá theo 1 giải/đội ở trang chi tiết thì gán ở server-side, còn mặc định là 0
+  const ctx = window.TB_CTX || { tourna_id: 0, team_id: 0 };
+
+  function showTyping(on){ if(typing){ typing.style.display = on ? 'flex' : 'none'; log.scrollTop = log.scrollHeight; } }
+  function addBubble(text, me=false, links=[]){
+    const row = document.createElement('div'); row.className = 'tb-row ' + (me?'tb-me':'tb-bot');
+    const b = document.createElement('div'); b.className = 'tb-bubble'; b.textContent = text; row.appendChild(b);
+    if(!me && Array.isArray(links) && links.length){
+      const wrap = document.createElement('div'); wrap.className='tb-links';
+      links.forEach(l=>{ const a=document.createElement('a'); a.href=l.href; a.target=l.target||'_self'; a.textContent=l.label||'Xem'; wrap.appendChild(a); });
+      b.appendChild(wrap);
+    }
+    log.insertBefore(row, typing || null); log.scrollTop = log.scrollHeight;
+  }
+
+  function openPanel(){
+    panel.style.display='flex'; localStorage.setItem('tb_open','1');
+    if(!sessionStorage.getItem('tb_greeted')){
+      const row = document.createElement('div'); row.className='tb-row tb-bot';
+      const b = document.createElement('div'); b.className='tb-bubble';
+      b.innerHTML = "Xin chào, mình là TournamentBot 🤖<br>Nhấn <b>Bắt đầu</b> để mình gợi ý cách hỏi.";
+      const btn = document.createElement('a'); btn.href="#"; btn.textContent="Bắt đầu";
+      btn.style.cssText='display:inline-block;margin-top:6px;padding:6px 10px;border:1px solid #e5e7eb;border-radius:8px';
+      btn.onclick = (e)=>{ e.preventDefault();
+        addBubble("Chào bạn 👋 Mình là TournamentBot.\nMình có thể giúp bạn tra cứu: lịch/kết quả đội, BXH/điều lệ giải, đội hình, vua phá lưới, hồ sơ cầu thủ.\nVí dụ:\n• đội Golden Tigers lịch\n• BXH giải 11111\n• vua phá lưới giải 11111\n• cầu thủ Nguyễn Xuân Hinh");
+        sessionStorage.setItem('tb_greeted','1'); row.remove();
+      };
+      const wrap = document.createElement('div'); wrap.className='tb-links'; wrap.appendChild(btn);
+      b.appendChild(wrap); row.appendChild(b); log.insertBefore(row, typing || null); log.scrollTop=log.scrollHeight;
+    }
+  }
+  function closePanel(){ panel.style.display='none'; localStorage.setItem('tb_open','0'); }
+
+  // gắn sự kiện chắc chắn (nếu có lỗi JS ở đâu đó, log ra để bạn thấy)
+  try {
+    fab.addEventListener('click', ()=> panel.style.display==='flex' ? closePanel() : openPanel());
+    closeBtn.addEventListener('click', closePanel);
+  } catch(e){ console.error('TB bind error:', e); }
+  if(localStorage.getItem('tb_open')==='1') openPanel();
+
+  const TYPING_MIN = 800, TYPING_MAX = 1200;
+
+  async function ask(){
+    const text = (msg.value||'').trim(); if(!text) return;
+    addBubble(text, true); msg.value='';
+
+    showTyping(true); const t0 = Date.now();
+    let data = { ok:false, answer:'⚠️ Lỗi kết nối API.' };
+
+    try{
+      const r = await fetch('api/chat.php', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ message:text, tourna_id: ctx.tourna_id||0, team_id: ctx.team_id||0 })
+      });
+      data = await r.json();
+    }catch(e){
+      console.error('TB fetch error:', e);
+    }
+
+    const need = Math.floor(Math.random()*(TYPING_MAX-TYPING_MIN))+TYPING_MIN;
+    const elapsed = Date.now()-t0; if (elapsed<need) await new Promise(r=>setTimeout(r, need-elapsed));
+    showTyping(false);
+
+    const links = Array.isArray(data.links) ? data.links : [];
+    addBubble(data.answer || '...', false, links);
+  }
+
+  send.addEventListener('click', ask);
+  msg.addEventListener('keydown', e=>{ if(e.key==='Enter') ask(); });
+
+  // Tooltip nho nhỏ
+  fab.addEventListener('mouseenter', ()=> fab.title = "Trợ lý 24/7: bấm để hỏi!");
+})();
+</script>
+<!-- ===== End TournamentBot Floating Widget ===== -->
+
 
 </body>
-
 </html>
-<?php
+
+

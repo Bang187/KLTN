@@ -10,29 +10,46 @@ $cTeam = new cTeam(); // class controlteam của bạn có getAllTeams(), getTea
 
 $flash = null;
 
-if ($_SERVER['REQUEST_METHOD']==='POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
-    if ($action==='register') {
+
+    if ($action === 'register') {
         $keyword = trim($_POST['team_name'] ?? '');
-        if ($keyword==='') {
+        if ($keyword === '') {
             $flash = 'Tên đội không được rỗng';
         } else {
-            $res = $cTeam->getTeamByName($keyword); // mysqli_result | -1 | -2
-            if ($res instanceof mysqli_result && $res->num_rows>0) {
-                $row = $res->fetch_assoc();                  // lấy kết quả đầu tiên
+            $res = $cTeam->getTeamByName($keyword);
+            if ($res instanceof mysqli_result && $res->num_rows > 0) {
+                $row = $res->fetch_assoc();
                 $ok  = $mTT->register($idTourna, (int)$row['id_team']);
-                $flash = $ok ? 'Đã thêm vào danh sách chờ duyệt' : 'Đội đã tồn tại trong giải hoặc lỗi CSDL';
-            } elseif ($res===-1) {
+                $flash = $ok ? 'Đã thêm vào danh sách chờ duyệt'
+                             : 'Đội đã tồn tại trong giải hoặc lỗi CSDL';
+            } elseif ($res === -1) {
                 $flash = 'Không tìm thấy đội phù hợp';
             } else {
                 $flash = 'Lỗi kết nối CSDL';
             }
         }
-    } elseif ($action==='setstatus') {
+
+    } elseif ($action === 'quick_approve') {
+        require_once __DIR__ . '/../control/controltournateam.php';
+        $cTT = new cTournaTeam();
+        $ok  = $cTT->approve((int)$_POST['id_tournateam'], (int)$_SESSION['ID_user']);
+        $flash = $ok ? 'Đã duyệt đội' : 'Duyệt thất bại';
+
+    } elseif ($action === 'quick_reject') {
+        require_once __DIR__ . '/../control/controltournateam.php';
+        $cTT = new cTournaTeam();
+        $ok  = $cTT->reject((int)$_POST['id_tournateam'], (int)$_SESSION['ID_user']);
+        $flash = $ok ? 'Đã từ chối đội' : 'Từ chối thất bại';
+
+    } elseif ($action === 'setstatus') {
         $ok = $mTT->updateStatus((int)$_POST['id_tournateam'], $_POST['status'] ?? 'pending');
         $flash = $ok ? 'Cập nhật trạng thái thành công' : 'Cập nhật thất bại';
     }
 }
+
+      
 
 // Lấy datalist (toàn bộ đội) & danh sách đã đăng ký
 $allTeams = $cTeam->getAllTeams();           // mysqli_result | -1 | -2
@@ -68,12 +85,20 @@ button{padding:6px 12px;cursor:pointer}
            : (isset($tourna['team_count']) ? (int)$tourna['team_count'] : 0);
 // dùng chung biến cho nav ?>
 
-<div class="nav">
+<!-- <div class="nav">
   <a href="?page=update_tourna&id=<?= $id ?>">Cấu hình</a>
   <a class="active" href="?page=addteam&id=<?= $id ?>">Đội tham gia</a>
   <a href="dashboard.php?page=draw&id_tourna=<?= $id_tourna ?>&team_count=<?= $teamCount ?>">Kết quả bốc thăm</a>
   <a href="?page=schedule&id=<?= $id ?>">Lịch thi đấu</a>
   <a href="?page=rank&id_tourna=<?= $id_tourna ?>">Thống kê - xếp hạng</a>
+</div> -->
+<div class="nav">
+  <a href="?page=update_tourna&id=<?= $id ?>">Cấu hình</a>
+  <a href="?page=regulation&id_tourna=<?php echo $id; ?>">Điều lệ</a>
+  <a class="active" href="?page=addteam&id=<?= $id ?>">Đội tham gia</a>
+  <a href="dashboard.php?page=draw&id_tourna=<?= $id ?>">Kết quả bốc thăm</a>
+  <a href="?page=schedule&id=<?= $id ?>">Lịch thi đấu</a>
+  <a href="?page=rank&id_tourna=<?= $id ?>">Thống kê - xếp hạng</a>
 </div>
 <div class="wrap">
   <h2>DANH SÁCH ĐỘI THAM GIA GIẢI</h2>
@@ -99,32 +124,48 @@ button{padding:6px 12px;cursor:pointer}
     <thead>
       <tr>
         <th>Đội</th>
+        <th>Nguồn đăng ký</th>
         <th>Trạng thái</th>
-        <th>Cập nhật</th>
+        <th>Hành động</th>
       </tr>
-    </thead>
+    </thead> 
     <tbody>
     <?php if ($registered instanceof mysqli_result && $registered->num_rows>0): ?>
       <?php while($r = $registered->fetch_assoc()): ?>
         <tr>
           <td><?= htmlspecialchars($r['teamName']) ?></td>
-          <td><span class="badge <?= htmlspecialchars($r['status']) ?>"><?= htmlspecialchars($r['status']) ?></span></td>
+          <td>
+            <?php if ($r['reg_source']==='online'): ?>
+              <span class="badge pending">Online</span>
+            <?php else: ?>
+              <span class="badge">BTC</span>
+            <?php endif; ?> 
+          </td>
+          <td>
+            <?php if ($r['reg_status']==='pending'): ?>
+              <span class="badge pending">Chờ duyệt</span>
+            <?php elseif ($r['reg_status']==='approved'): ?>
+              <span class="badge approved">Đã duyệt</span>
+            <?php else: ?>
+              <span class="badge rejected">Từ chối</span>
+            <?php endif; ?>
+          </td>
           <td>
             <form method="post" style="display:flex;gap:6px;align-items:center">
               <input type="hidden" name="action" value="setstatus">
               <input type="hidden" name="id_tournateam" value="<?= (int)$r['id_tournateam'] ?>">
-              <select name="status">
-                <option value="pending"  <?= $r['status']==='pending'?'selected':''; ?>>Đang duyệt</option>
-                <option value="approved" <?= $r['status']==='approved'?'selected':''; ?>>Chấp nhận</option>
-                <option value="rejected" <?= $r['status']==='rejected'?'selected':''; ?>>Từ chối</option>
-              </select>
+<select name="status">
+  <option value="pending"  <?= $r['reg_status']==='pending'?'selected':''; ?>>Đang duyệt</option>
+  <option value="approved" <?= $r['reg_status']==='approved'?'selected':''; ?>>Chấp nhận</option>
+  <option value="rejected" <?= $r['reg_status']==='rejected'?'selected':''; ?>>Từ chối</option>
+</select>
               <button type="submit">Lưu</button>
             </form>
           </td>
         </tr>
       <?php endwhile; ?>
     <?php else: ?>
-      <tr><td colspan="3">Chưa có đội nào đăng ký.</td></tr>
+      <tr><td colspan="4">Chưa có đội nào đăng ký.</td></tr>
     <?php endif; ?>
     </tbody>
   </table>

@@ -1,8 +1,36 @@
 
     <?php
+//
+    if (isset($_SESSION['flash_message'])) {
+        echo "<script>alert('" . $_SESSION['flash_message'] . "');</script>";
+        unset($_SESSION['flash_message']);
+    }//
     include_once('control/controltourna.php');
+    include_once('control/controlfollowtourna.php');//
     
     $controller = new cTourna();
+    $followCtrl = new cFollow();//
+
+    // Nếu người dùng bấm nút Theo dõi
+    if (isset($_POST['action']) && $_POST['action'] === 'follow' && isset($_POST['idtourna'])) {
+        if (!isset($_SESSION['id_user'])) {
+            echo "<script>alert('Vui lòng đăng nhập để theo dõi giải đấu!');</script>";
+        } else {
+            $id_user = $_SESSION['id_user'];
+            $id_tourna = (int)$_POST['idtourna'];
+            $res = $followCtrl->toggleFollow($id_user, $id_tourna);
+            if ($res === true) {
+                echo "<script>alert('Đã theo dõi giải đấu này!');</script>";
+            } elseif ($res === 'unfollowed') {
+                echo "<script>alert('Đã bỏ theo dõi giải đấu này.');</script>";
+            } else {
+                echo "<script>alert('Có lỗi xảy ra khi theo dõi.');</script>";
+            }
+            // 🔁 Sau khi xử lý, redirect lại chính trang
+        header("Location: " . $_SERVER['REQUEST_URI']);
+        exit;
+        }
+    }
     if(isset($_REQUEST["btnSearch"])){
       $kq = $controller->showTournamentByName($_REQUEST["keyword"]);
     }else{
@@ -14,6 +42,11 @@
     if ($kq && $kq->num_rows > 0) {
         while ($row = $kq->fetch_assoc()) {
     $id = $row['idtourna'];
+    //follow
+    $isFollowed = false;
+    if (isset($_SESSION['id_user'])) {
+        $isFollowed = $followCtrl->isFollowing($_SESSION['id_user'], $id);
+    }//
     $rawBanner = trim($row['banner'] ?? '');
     $rawLogo   = trim($row['logo']   ?? '');
     $bannerSrc = $rawBanner === ''
@@ -36,7 +69,7 @@
             <div class="col-lg-3 col-md-6">
               <div class="t-card card h-100">
                 <div class="card-banner">
-                  <a href="<?=$BASE?>/index.php?page=detail_tourna&id=<?=$id?>">
+                  <a href="view/tourna_detail.php?id=<?= urlencode($id) ?>">
                     <img src="<?= htmlspecialchars($bannerSrc) ?>" alt="banner"
                         onerror="this.onerror=null;this.src='<?= $BASE ?>/img/giaidau/banner_macdinh.jpg';">
                   </a>
@@ -54,7 +87,13 @@
                 </div>
 
                 <div class="card-footer">
-                  <a href="#" class="btn btn-follow">Theo dõi</a>
+                  <form method="POST" style="display:inline;">
+                    <input type="hidden" name="idtourna" value="<?= $id ?>">
+                    <input type="hidden" name="action" value="follow">
+                    <button type="submit" class="btn btn-follow <?= $isFollowed ? 'btn-danger' : 'btn-primary' ?>">
+                        <?= $isFollowed ? 'Hủy theo dõi' : 'Theo dõi' ?>
+                    </button>
+                  </form>
                 </div>
               </div>
             </div>

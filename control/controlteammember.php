@@ -14,7 +14,7 @@ class cteamMember{
                 return -1;
             }
         }
-    }
+    } 
     public function get01TeamMember($id){
         $p = new mteamMember();
         $tblTeam = $p->selectTeamMember($id);
@@ -65,6 +65,15 @@ class cteamMember{
         $tbl = $m->selectMemberByPhone($phone);
         if($tbl == false) return -2;
         return $tbl->num_rows > 0 ? $tbl : -1;
+    }
+    public function addMember($id_user, $id_team) {
+        $p = new mteamMember();
+        $result = $p->insertMember($id_user, $id_team);
+        if ($result) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 }
 ?>

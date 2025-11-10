@@ -137,5 +137,20 @@ class cteam{
             $kq = $p->uploadTeam($idteam, $tendoimoi, $logo, $id_user);
             return $kq;
         }
+public function showOpenTournamentsForUser(int $userId) {
+    require_once __DIR__ . '/../model/modeltourna.php';
+    $mT   = new mTourna();
+    $rows = $mT->listOpenForUser($userId, 100);
+
+    // Nếu $rows là mysqli_result thì chuyển thành mảng
+    if ($rows instanceof mysqli_result) {
+        $tmp = [];
+        while ($r = $rows->fetch_assoc()) $tmp[] = $r;
+        $rows = $tmp;
+    }
+
+    // include đúng file + đúng base path
+    include_once __DIR__ . '/../view/register_tourna.php';
+}
 }
 ?>

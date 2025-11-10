@@ -23,7 +23,8 @@ class mteamMember{
         FROM team_member tm
         JOIN team t ON tm.id_team = t.id_team
         JOIN player p ON tm.id_player = p.id_player
-        JOIN users u ON p.id_user = u.id_user";
+        JOIN users u ON p.id_user = u.id_user
+        WHERE tm.status = 1";
         
         $result = $conn->query($query);
         $p->dongketnoi($conn);
@@ -50,7 +51,7 @@ class mteamMember{
         FROM team_member tm
         JOIN player p ON tm.id_player = p.id_player
         JOIN users u ON p.id_user = u.id_user
-        WHERE tm.id_team = '$id';
+        WHERE tm.id_team = '$id' AND tm.status = 1;
         ";
         $result = $conn->query($query);
         $p->dongketnoi($conn);
@@ -77,7 +78,7 @@ public function select01eamMember($id_member) {
         FROM team_member tm
         JOIN player p ON tm.id_player = p.id_player
         JOIN users u ON p.id_user = u.id_user
-        WHERE tm.id_member = '$id_member';
+        WHERE tm.id_member = '$id_member' AND tm.status = 1;
         ";
         $result = $conn->query($query);
         $p->dongketnoi($conn);
@@ -137,7 +138,11 @@ public function delete01TeamMember($id){
         $p = new mconnect();
         $conn = $p->moketnoi();
         if($conn){
-            $query = "DELETE FROM team_member where id_member='$id'";
+            $query = "
+                UPDATE team_member 
+                SET status = 0, leaveTime = NOW() 
+                WHERE id_member = '$id'
+            ";
             $result = $conn->query($query);
             $p->dongketnoi($conn);
             return $result;
@@ -152,13 +157,63 @@ public function delete01TeamMember($id){
             $query = "SELECT tm.*, u.FullName, u.phone, u.email 
                       FROM team_member tm
                       JOIN users u ON tm.id_user = u.id_user
-                      WHERE u.phone = '$phone'";
+                      WHERE u.phone = '$phone' AND tm.status = 1;";
             $result = $conn->query($query);
             $p->dongketnoi($conn);
             return $result;
         }
         return false;
     }
+public function insertMember($id_user, $id_team) {
+    $p = new mConnect();
+    $conn = $p->moketnoi();
+    if ($conn) {
+        // 1. Kiểm tra user đã là cầu thủ chưa
+        $checkPlayer = $conn->query("SELECT id_player FROM player WHERE id_user = '$id_user'");
+        if ($checkPlayer && $checkPlayer->num_rows > 0) {
+            $row = $checkPlayer->fetch_assoc();
+            $id_player = $row['id_player'];
+        } else {
+            // Nếu chưa có thì thêm mới
+            $insertPlayer = "INSERT INTO player ( position, age, status, id_user) VALUES ('', 0, 'Đang hoạt động', '$id_user')";
+            if ($conn->query($insertPlayer)) {
+                $id_player = $conn->insert_id;
+            } else {
+                $p->dongketnoi($conn);
+                return false;
+            }
+        }
+
+        // 2. Kiểm tra người này đã trong team chưa
+        $checkTeam = $conn->query("SELECT * FROM team_member WHERE id_player = '$id_player' AND id_team = '$id_team'");
+        if ($checkTeam && $checkTeam->num_rows > 0) {
+            $p->dongketnoi($conn);
+            return false; // đã có trong team
+        }
+
+        // 3. Thêm vào team_member
+        $sql = "INSERT INTO team_member (joinTime, roleInTeam, id_team, id_player)
+                VALUES (NOW(), 'Thành viên', '$id_team', '$id_player')";
+        $result = $conn->query($sql);
+
+        // 4️ Cập nhật lại ID_role trong bảng users
+        if ($result) {
+            $updateRole = "
+                UPDATE users
+                SET ID_role = CASE 
+                    WHEN ID_role = 5 THEN 4 
+                    ELSE ID_role 
+                END
+                WHERE id_user = '$id_user'
+            ";
+            $conn->query($updateRole);
+        }
+        $p->dongketnoi($conn);
+        return $result;
+    } else {
+        return false;
+    }
+}
 
 }
 ?>

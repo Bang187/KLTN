@@ -8,7 +8,11 @@
                 $kq = $p->getAllTeams();
             }
             $dem = 1; 
-            if($kq){ 
+            if ($kq === -1) {
+                echo '<div class="alert alert-warning text-center mt-4">⚠️ Không tìm thấy đội bóng nào phù hợp với từ khóa của bạn.</div>';
+            } elseif ($kq === -2) {
+                echo '<div class="alert alert-danger text-center mt-4">❌ Lỗi kết nối cơ sở dữ liệu.</div>';
+            }else{ 
                 echo '<div class="row g-4">'; // Bootstrap grid
                 while($row = $kq->fetch_assoc()) {
                     $id = $row['id_team']; // hoặc $row['teamID'] tùy theo tên cột

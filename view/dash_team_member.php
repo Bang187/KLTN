@@ -79,7 +79,7 @@ $teamCount = isset($teamCount) ? $teamCount : 0; // nếu có giá trị trướ
         <a href="dashboard.php?page=dash_team_member&id=<?php echo $idteam;?>">Thành viên</a>
     </div>
 <?php
-echo '<a href="dashboard.php?page=create_member">+ Thêm thành viên</a>';
+echo '<a href="dashboard.php?page=add_member&id_team=' . $idteam . '">+ Thêm thành viên</a>';
 if ($tblMember === -2) {
     echo "Không thể kết nối!";
 } elseif ($tblMember === -1) {

@@ -146,10 +146,10 @@ if ($_SESSION['login'] !== true || $_SESSION['ID_role']  != 1) {
     <aside class="sidebar" id="sidebar">
       <div class="brand"><i class="fa-solid fa-shield-halved"></i> Admin</div>
       <ul class="menu">
-        <li><a href="manage_accounts.php" class="active"><i class="fa-solid fa-user-gear"></i> Quản lý tài khoản</a></li>
-        <li><a href="manage_news.php"><i class="fa-solid fa-newspaper"></i> Quản lý tin tức</a></li>
+        <li><a href="admin.php?page=manage_list_user" class="active"><i class="fa-solid fa-user-gear"></i> Quản lý tài khoản</a></li>
+        <li><a href="admin.php?page=manage_news"><i class="fa-solid fa-newspaper"></i> Quản lý tin tức</a></li>
         <li><a href="analytics.php"><i class="fa-solid fa-chart-column"></i> Thống kê</a></li>
-        <li><a href="view/logout.php"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a></li>
+        <li><a href="admin.php?page=logout"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</a></li>
       </ul>
     </aside>
 
@@ -159,60 +159,42 @@ if ($_SESSION['login'] !== true || $_SESSION['ID_role']  != 1) {
         <button class="hamburger" id="btnToggle"><i class="fa-solid fa-bars"></i></button>
         <strong>Dashboard</strong>
       </div>
-      <div class="right" style="display:flex;align-items:center;gap:16px;">
-        <div class="search"><input type="text" placeholder="Tìm nhanh..."></div>
+    <form action="admin.php" method="get">
+        <?php if (isset($_REQUEST["page"])) { ?>
+                <input type="hidden" name="page" value="<?php echo $_REQUEST['page']; ?>">
+            <?php } ?>
+        <div class="right" style="display:flex;align-items:center;gap:16px;">
+        <div class="search"><input type="text" name="keyword" placeholder="Tìm nhanh...">
+      <button type="submit" name="btnSearch"><i class="fa fa-search"></i></button></div>
+      </form>
         <?php
             if (isset($_SESSION['username'])) {
                 echo '<div class="user"><span class="avatar"></span> ' . htmlspecialchars($_SESSION['username']) . '</div>';
             }
         ?>
-        
       </div>
     </header>
 
     <!-- Content -->
     <main class="content">
-      <div class="breadcrumbs">Trang chủ / Dashboard</div>
+      
+<?php if (isset($_REQUEST['page'])) {
+  $p = $_REQUEST['page'];
 
-      <!-- Thống kê nhanh -->
-      <section class="grid">
-        <div class="card">
-          <h3>Tài khoản</h3>
-          <div class="stat">100</div>
-          <div class="muted">Tổng số người dùng</div>
-        </div>
-        <div class="card">
-          <h3>Tin tức</h3>
-          <div class="stat">3</div>
-          <div class="muted">Bài viết hiện có</div>
-        </div>
-        <div class="card">
-          <h3>Lượt truy cập</h3>
-          <div class="stat">12.4K</div>
-          <div class="muted">Trong 30 ngày</div>
-        </div>
-        <div class="card">
-          <h3>Tổng số đội</h3>
-          <div class="stat">30</div>
-          <div class="muted">Đội bóng</div>
+  switch ($p) {
+    case 'manage_news':    include_once 'view/manage_news.php'; break;
+    case 'edit_news':    include_once 'view/edit_news.php'; break;
+    case 'delete_news':    include_once 'view/delete_news.php'; break;
+    case 'create_news':    include_once 'view/create_news.php'; break;
+    case 'logout':   include_once 'view/logout.php'; break;
+    case 'manage_list_user':    include_once 'view/manage_list_user.php'; break;
+    case 'edit_user':    include_once 'view/edit_user.php'; break;
+    case 'delete_user':    include_once 'view/delete_user.php'; break;
+    
+  }
 
-        </div>
-        <div class="card">
-          <h3>Tổng Giải đấu</h3>
-          <div class="stat">10</div>
-          <div class="muted">Giải đấu</div>
-        
-        </div>
-      </section>
-
-      <!-- Khu vực nội dung chính -->
-      <section class="panel">
-        <h3 style="margin-bottom:10px;">Nội dung</h3>
-        <p class="muted">abc</p>
-        <div style="margin-top:14px;">
-          <a href="manage_accounts.php" class="btn-primary"><i class="fa-solid fa-user-gear"></i> Đi đến Quản lý tài khoản</a>
-        </div>
-      </section>
+} else { ?>
+<?php include_once("view/404.php"); } ?>
     </main>
   </div>
 

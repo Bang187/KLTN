@@ -249,7 +249,7 @@ body.login-page article:not(.dn){
 
     <div class="actions">
       <a class="link" href="#">Quên mật khẩu?</a>
-      <a class="link" href="register.php">Tạo tài khoản</a>
+      <a class="link" href="index.php?page=register">Tạo tài khoản</a>
     </div>
   </form>
 </article>

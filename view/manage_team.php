@@ -91,6 +91,12 @@ if ($list instanceof mysqli_result) {
       <a class="btn-update" href="?page=update_team&id=<?= (int)$r['id_team'] ?>">🏆 Cấu hình</a>
       <a class="btn-del" href="?page=delete_team&id=<?= (int)$r['id_team'] ?>" onclick="return confirm('Bạn chắc chắn muốn xóa đội này?');">🗑️ Xóa</a>
     </div>
+    <?php
+// require_once __DIR__ . '/../control/controlteam.php';
+// $uid = (int)($_SESSION['ID_user'] ?? 0);
+// $ctl = new cteam();
+// $ctl->showOpenTournamentsForUser($uid);   // <- block “Giải đang mở đăng ký”
+?>
   </article>
 <?php endwhile; 
 } 
